@@ -4,12 +4,18 @@ dependencies:
   '@matoseb/utils':
     specifier: ^0.1.5
     version: 0.1.5
+  '@tweakpane/plugin-essentials':
+    specifier: ^0.1.8
+    version: 0.1.8(tweakpane@3.1.7)
   normalize.css:
     specifier: ^8.0.1
     version: 8.0.1
   paper:
     specifier: ^0.12.17
     version: 0.12.17
+  tweakpane:
+    specifier: ^3.1.7
+    version: 3.1.7
 
 devDependencies:
   vite:
@@ -207,6 +213,14 @@ packages:
       - terser
     dev: false
 
+  /@tweakpane/plugin-essentials@0.1.8(tweakpane@3.1.7):
+    resolution: {integrity: sha512-tWBXzWafcjiq+/XvZnOgSz0B+YikwZj0NnqiZPba+AwTiDqNk/6PU3so0Bs0qyxLIJKT/+AUPRL8jBmtERYzwA==}
+    peerDependencies:
+      tweakpane: ^3.1.4
+    dependencies:
+      tweakpane: 3.1.7
+    dev: false
+
   /esbuild@0.17.16:
     resolution: {integrity: sha512-aeSuUKr9aFVY9Dc8ETVELGgkj4urg5isYx8pLf4wlGgB0vTFjxJQdHnNH6Shmx4vYYrOTLCHtRI5i1XZ9l2Zcg==}
     engines: {node: '>=12'}
@@ -307,6 +321,10 @@ packages:
   /supports-preserve-symlinks-flag@1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
+
+  /tweakpane@3.1.7:
+    resolution: {integrity: sha512-8JF0Ri3cPTv/tUwrb28FBalB6XTW+m3pm2BUMz8gXkvppMjSQ89RMOF/jLdaWhrkRnSayPp5WX9lTDXNqRgK5Q==}
+    dev: false
 
   /vite@4.2.0:
     resolution: {integrity: sha512-AbDTyzzwuKoRtMIRLGNxhLRuv1FpRgdIw+1y6AQG73Q5+vtecmvzKo/yk8X/vrHDpETRTx01ABijqUHIzBXi0g==}

@@ -4,6 +4,16 @@ import { addMilliseconds, hourToAngle, minuteToAngle, secondToAngle } from '/uti
 import { findClosest } from '/paper-utils.js'
 import { getDeltaAngle, AngleSpring } from '/math-utils.js'
 
+import { Pane } from 'tweakpane';
+import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
+
+const pane = new Pane();
+pane.registerPlugin(EssentialsPlugin);
+const fpsGraph = pane.addBlade({
+  view: 'fpsgraph',
+  label: 'fpsgraph',
+});
+
 console.log("https://matoseb.com");
 
 paper.setup('paperCanvas');
@@ -154,6 +164,8 @@ view.onResize();
 
 view.onFrame = (event) => {
 
+  fpsGraph.begin();
+
   if (!selectedNeedle) timeOffset += event.delta
 
   const time = addMilliseconds(startTime, timeOffset * 1000)
@@ -162,13 +174,15 @@ view.onFrame = (event) => {
   const angleSec = snappySeconds(secondToAngle(time, false), 1.5);
 
   needleSec.matrix.reset()
-  needleSec.rotate(springs.seconds.update(angleSec));
+  needleSec.rotate(springs.seconds.update(angleSec, event.delta));
 
   needleMin.matrix.reset()
-  needleMin.rotate(springs.minutes.update(angleMin));
+  needleMin.rotate(springs.minutes.update(angleMin, event.delta));
 
   needleHour.matrix.reset()
-  needleHour.rotate(springs.hours.update(angleHour));
+  needleHour.rotate(springs.hours.update(angleHour, event.delta));
+
+  fpsGraph.end();
 }
 
 function snappySeconds(angleSec, delay) {
@@ -181,7 +195,7 @@ function findNeedle(point) {
     segments: true,
     stroke: true,
     fill: true,
-    tolerance: 0,
+    tolerance: 5,
     match: (hit) => findClosest(hit.item, isNeedle)
   });
 

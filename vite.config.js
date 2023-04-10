@@ -1,3 +1,8 @@
 export default {
-    base: ''
+    base: '',
+
+    server: {
+        host: true,
+        port: 3000,
+    }
 }

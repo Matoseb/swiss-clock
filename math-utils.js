@@ -5,10 +5,15 @@ export class AngleSpring extends animation.Spring {
         super(options);
         this.delta = 0;
     }
-    update(target) {
+    update(target, delta) {
+        const oldVal = this.value;
         this.delta = getDeltaAngle(this.target, target)
         this.target += this.delta
-        return super.update();
+        super.update();
+
+        this.value = oldVal;
+        this.value += this.velocity * (delta * 120)
+        return this.value;
     }
 }
 
