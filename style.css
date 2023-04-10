@@ -1,0 +1,21 @@
+/* import css file */
+@import url('normalize.css');
+
+html, body {
+  background-color: black;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  padding: 2em;
+  box-sizing: border-box;
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+}
+
+canvas[resize] {
+  width: 100%;
+  height: 100%;
+}
