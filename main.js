@@ -1,6 +1,8 @@
 import './style.css'
 import paper from 'paper'
-import { findClosest, getDeltaAngle, AngleSpring, addMilliseconds, hourToAngle, minuteToAngle, secondToAngle } from '/utils.js'
+import { addMilliseconds, hourToAngle, minuteToAngle, secondToAngle } from '/utils.js'
+import { findClosest } from '/paper-utils.js'
+import { getDeltaAngle, AngleSpring } from '/math-utils.js'
 
 paper.setup('paperCanvas');
 const { view, project, Path, Tool, Point } = paper
@@ -45,6 +47,7 @@ for (let i = 0; i < 12; i++) {
   const angle = i / 12 * 360;
   const p = 93 / 2
 
+  // HOUR MARKS
   const path = new Path.Line({
     strokeColor: 'black',
     strokeWidth: 3.2,
@@ -55,6 +58,7 @@ for (let i = 0; i < 12; i++) {
 
   path.rotate(angle, [0, 0]);
 
+  // MINUTE MARKS
   for (let j = 0; j < 4; j++) {
     const angle2 = (j + 1) / 5 * 360 / 12 + angle;
     const path = new Path.Line({
@@ -175,7 +179,7 @@ function findNeedle(point) {
     segments: true,
     stroke: true,
     fill: true,
-    tolerance: 1,
+    tolerance: 0,
     match: (hit) => findClosest(hit.item, isNeedle)
   });
 
