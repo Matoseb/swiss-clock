@@ -1,24 +1,34 @@
 import './style.css'
 import paper from 'paper'
-import { animation } from '@matoseb/utils'
-
-// javascript paper.js base template
-// Keep global references to both tools, so the HTML
-// links below can access them.
-var tool1;
+import { findClosest, getDeltaAngle, AngleSpring, addMilliseconds, hourToAngle, minuteToAngle, secondToAngle } from '/utils.js'
 
 paper.setup('paperCanvas');
 const { view, project, Path, Tool, Point } = paper
+const tool = new Tool();
 
-const startTime = new Date()
-// // group
-const mnSpring = new animation.Spring({
-  drag: 0.9,
-  strength: 0.1,
-  value: computeTime(startTime).relative.minutes,
-});
+let startTime = new Date() // 1971
+let timeOffset = 0
+let selectedNeedle = false
 
-const margin = 200
+const springs = {
+  seconds: new AngleSpring({
+    drag: 0.9,
+    strength: 0.1,
+    value: snappySeconds(secondToAngle(startTime, false), 1.5),
+  }),
+
+  minutes: new AngleSpring({
+    drag: 0.9,
+    strength: 0.1,
+    value: minuteToAngle(startTime, true),
+  }),
+  hours: new AngleSpring({
+    drag: 0.9,
+    strength: 0.1,
+    value: hourToAngle(startTime, false),
+  })
+}
+
 const parent = new paper.Group();
 parent.applyMatrix = false
 
@@ -59,7 +69,13 @@ for (let i = 0; i < 12; i++) {
 }
 
 // NEEDLE HOUR
-const needleHour = new paper.Group()
+const needleHour = new paper.Group({
+  data: {
+    type: 'needle',
+    timeFactor: 60 * 60 * 12,
+  },
+  pivot: [0, 0],
+})
 needleHour.applyMatrix = false
 needleHour.parent = parent
 
@@ -71,7 +87,13 @@ new Path({
 });
 
 // NEEDLE MIN
-const needleMin = new paper.Group()
+const needleMin = new paper.Group({
+  data: {
+    type: 'needle',
+    timeFactor: 60 * 60,
+  },
+  pivot: [0, 0],
+})
 needleMin.applyMatrix = false
 needleMin.parent = parent
 
@@ -83,7 +105,14 @@ new Path({
 });
 
 // NEEDLE SEC
-const needleSec = new paper.Group()
+const needleSec = new paper.Group({
+  data: {
+    type: 'needle',
+    timeFactor: 60,
+  },
+  pivot: [0, 0],
+})
+
 const anchor = new Point(0, -30);
 needleSec.applyMatrix = false
 needleSec.parent = parent
@@ -103,11 +132,7 @@ new Path.Circle({
   position: anchor,
 });
 
-parent.fullySelected = true;
-
-view.onResize = (event) => {
-
-  // stroke scaling
+view.onResize = () => {
 
   parent.matrix.reset()
   parent.strokeScaling = true;
@@ -122,87 +147,83 @@ view.onResize = (event) => {
 view.onResize();
 
 view.onFrame = (event) => {
-  const d = addMilliseconds(startTime, event.time * 1000)
-  const t = computeTime(d);
 
-  const waitDelay = t.secondToMillis(1.5);
-  const angleSec = Math.min(1, (t.continuous.seconds / t.asMillis.minutes) * (1 + waitDelay / t.asMillis.minutes)) * 360;
-  const angleHour = t.continuous.hours / t.asMillis.twelveHours * 360;
+  if (!selectedNeedle) timeOffset += event.delta
 
-  let sm = mnSpring.update(t.relative.minutes)
-  const angleMin = sm / t.asMillis.hours * 360;
+  const time = addMilliseconds(startTime, timeOffset * 1000)
+  const angleHour = hourToAngle(time, false);
+  const angleMin = minuteToAngle(time, true);
+  const angleSec = snappySeconds(secondToAngle(time, false), 1.5);
 
   needleSec.matrix.reset()
-  needleSec.rotate(angleSec, [0, 0]);
+  needleSec.rotate(springs.seconds.update(angleSec));
 
   needleMin.matrix.reset()
-  needleMin.rotate(angleMin, [0, 0]);
+  needleMin.rotate(springs.minutes.update(angleMin));
 
   needleHour.matrix.reset()
-  needleHour.rotate(angleHour, [0, 0]);
+  needleHour.rotate(springs.hours.update(angleHour));
 }
 
-// // Create two drawing tools.
-// // tool1 will draw straight lines,
-// // tool2 will draw clouds.
+function snappySeconds(angleSec, delay) {
+  const waitDelay = secondToAngle(delay);
+  return Math.min(360, (angleSec % 360) / 360 * (360 + waitDelay))
+}
 
-// // Both share the mouseDown event:
-// let path;
+function findNeedle(point) {
+  const hitResult = project.hitTest(point, {
+    segments: true,
+    stroke: true,
+    fill: true,
+    tolerance: 1,
+    match: (hit) => findClosest(hit.item, isNeedle)
+  });
 
-// tool1 = new Tool();
+  if (hitResult) return findClosest(hitResult.item, isNeedle)
+}
 
-// tool1.onMouseDown = (event) => {
-//   path = new Path();
-//   path.strokeColor = 'black';
-//   path.add(event.point);
-// }
+tool.onMouseDown = (event) => {
 
-function computeTime(t) {
-  const fs = 1000;
-  const fm = fs * 60;
-  const fh = fm * 60;
-  const fc = fh * 12;
+  const foundNeedle = findNeedle(event.point);
 
-  const ms = t.getMilliseconds();
-  const ss = t.getSeconds() * fs;
-  const mn = t.getMinutes() * fm;
-  const hr = t.getHours() * fh;
-
-  const am = Math.floor(t.getTime() / fm) * fm
-
-
-  const cs = ss + ms
-  const cm = mn + cs
-  const ch = hr + cm
-
-  return {
-    asMillis: {
-      seconds: fs,
-      minutes: fm,
-      hours: fh,
-      twelveHours: fc,
-    },
-    absolute: {
-      minutes: am,
-    },
-    relative: {
-      millis: ms,
-      seconds: ss,
-      minutes: mn,
-      hours: hr,
-    },
-    continuous: {
-      seconds: cs,
-      minutes: cm,
-      hours: ch,
-    },
-    secondToMillis(seconds) {
-      return seconds * fs;
-    }
+  project.activeLayer.selected = false;
+  if (foundNeedle) {
+    selectedNeedle = foundNeedle;
+    const anchor = selectedNeedle.localToGlobal(selectedNeedle.pivot)
+    selectedNeedle.data.angle = findAngle(event.downPoint, anchor)
+    setClass('--active', true);
   }
 }
-function addMilliseconds(t, milliseconds) {
-  const date = new Date(t.valueOf());
-  date.setMilliseconds(date.getMilliseconds() + milliseconds);
-  return date;
-};
+
+
+tool.onMouseMove = (event) => {
+  const foundNeedle = findNeedle(event.point);
+  setClass('--hover', foundNeedle);
+}
+
+tool.onMouseDrag = (event) => {
+  if (!selectedNeedle) return;
+
+  const anchor = selectedNeedle.localToGlobal(selectedNeedle.pivot)
+  const newAngle = findAngle(event.lastPoint, anchor)
+  const delta = getDeltaAngle(selectedNeedle.data.angle, newAngle)
+  selectedNeedle.data.angle = newAngle
+  timeOffset += delta / 360 * selectedNeedle.data.timeFactor;
+}
+
+tool.onMouseUp = (event) => {
+  selectedNeedle = false
+  setClass('--active', false);
+}
+
+function findAngle(p1, p2) {
+  return p1.subtract(p2).angle
+}
+
+function isNeedle(item) {
+  return item.data.type === 'needle'
+}
+
+function setClass(className, enable) {
+  document.body.classList.toggle(className, Boolean(enable))
+}
