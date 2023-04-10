@@ -13,6 +13,7 @@ const fpsGraph = pane.addBlade({
   view: 'fpsgraph',
   label: 'fpsgraph',
 });
+pane.hidden = !import.meta.env.DEV;
 
 console.log("https://matoseb.com");
 
