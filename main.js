@@ -4,6 +4,8 @@ import { addMilliseconds, hourToAngle, minuteToAngle, secondToAngle } from '/uti
 import { findClosest } from '/paper-utils.js'
 import { getDeltaAngle, AngleSpring } from '/math-utils.js'
 
+console.log("https://matoseb.com");
+
 paper.setup('paperCanvas');
 const { view, project, Path, Tool, Point } = paper
 const tool = new Tool();
