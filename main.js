@@ -90,6 +90,7 @@ const needleHour = new paper.Group({
   data: {
     type: 'needle',
     timeFactor: 60 * 60 * 12,
+    spring: springs.hours,
   },
   pivot: [0, 0],
 })
@@ -108,6 +109,7 @@ const needleMin = new paper.Group({
   data: {
     type: 'needle',
     timeFactor: 60 * 60,
+    spring: springs.minutes,
   },
   pivot: [0, 0],
 })
@@ -126,6 +128,7 @@ const needleSec = new paper.Group({
   data: {
     type: 'needle',
     timeFactor: 60,
+    spring: springs.seconds,
   },
   pivot: [0, 0],
 })
@@ -167,12 +170,26 @@ view.onFrame = (event) => {
 
   fpsGraph.begin();
 
-  if (!selectedNeedle) timeOffset += event.delta
+  springs.seconds.toggle(true)
+  springs.minutes.toggle(true)
+  springs.hours.toggle(true)
 
+  if (!selectedNeedle) {
+    timeOffset += event.delta
+  } else {
+    selectedNeedle.data.spring.toggle(false)
+    // timeOffset += (Math.floor(timeOffset/60) * 60) - timeOffset
+  }
+
+  // console.log(timeOffset);
   const time = addMilliseconds(startTime, timeOffset * 1000)
   const angleHour = hourToAngle(time, false);
   const angleMin = minuteToAngle(time, true);
   const angleSec = snappySeconds(secondToAngle(time, false), 1.5);
+
+
+
+
 
   needleSec.matrix.reset()
   needleSec.rotate(springs.seconds.update(angleSec, event.delta));
@@ -196,7 +213,7 @@ function findNeedle(point) {
     segments: true,
     stroke: true,
     fill: true,
-    tolerance: 5,
+    tolerance: 1,
     match: (hit) => findClosest(hit.item, isNeedle)
   });
 
@@ -229,6 +246,7 @@ tool.onMouseDrag = (event) => {
   const newAngle = findAngle(event.lastPoint, anchor)
   const delta = getDeltaAngle(selectedNeedle.data.angle, newAngle)
   selectedNeedle.data.angle = newAngle
+
   timeOffset += delta / 360 * selectedNeedle.data.timeFactor;
 }
 
