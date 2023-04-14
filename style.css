@@ -6,8 +6,11 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  padding: 2em;
   box-sizing: border-box;
+}
+
+body {
+  padding: 4em;
 }
 
 #app {

@@ -124,10 +124,11 @@ new Path({
 });
 
 // NEEDLE SEC
+const SECONDS = 60;
 const needleSec = new paper.Group({
   data: {
     type: 'needle',
-    timeFactor: 60,
+    timeFactor: SECONDS,
     spring: springs.seconds,
   },
   pivot: [0, 0],
@@ -175,21 +176,29 @@ view.onFrame = (event) => {
   springs.hours.toggle(true)
 
   if (!selectedNeedle) {
-    timeOffset += event.delta
+    // timeOffset = 
+    startTime = addMilliseconds(startTime, event.delta * 1000)
   } else {
     selectedNeedle.data.spring.toggle(false)
     // timeOffset += (Math.floor(timeOffset/60) * 60) - timeOffset
   }
 
   // console.log(timeOffset);
-  const time = addMilliseconds(startTime, timeOffset * 1000)
-  const angleHour = hourToAngle(time, false);
-  const angleMin = minuteToAngle(time, true);
-  const angleSec = snappySeconds(secondToAngle(time, false), 1.5);
+
+  if (selectedNeedle.timeFactor) {
+    // console.log();
+    // time.setSeconds(selectedNeedle.data.clock.getSeconds())
+    // time.setSeconds
+  }
+
+  const angleHour = hourToAngle(startTime, false);
+  const angleMin = minuteToAngle(startTime, true);
+  const angleSec = snappySeconds(secondToAngle(startTime, false), 1.5);
 
 
 
-
+  // startTime.setSeconds(selectedNeedle.data.seconds)
+  // startTime.setMilliseconds(0)
 
   needleSec.matrix.reset()
   needleSec.rotate(springs.seconds.update(angleSec, event.delta));
@@ -201,6 +210,8 @@ view.onFrame = (event) => {
   needleHour.rotate(springs.hours.update(angleHour, event.delta));
 
   fpsGraph.end();
+
+  // timeOffset = 0
 }
 
 function snappySeconds(angleSec, delay) {
@@ -229,6 +240,7 @@ tool.onMouseDown = (event) => {
     selectedNeedle = foundNeedle;
     const anchor = selectedNeedle.localToGlobal(selectedNeedle.pivot)
     selectedNeedle.data.angle = findAngle(event.downPoint, anchor)
+    selectedNeedle.data.seconds = startTime.getSeconds()
     setClass('--active', true);
   }
 }
@@ -247,7 +259,9 @@ tool.onMouseDrag = (event) => {
   const delta = getDeltaAngle(selectedNeedle.data.angle, newAngle)
   selectedNeedle.data.angle = newAngle
 
-  timeOffset += delta / 360 * selectedNeedle.data.timeFactor;
+  const timeOffset = delta / 360 * selectedNeedle.data.timeFactor;
+  startTime = addMilliseconds(startTime, timeOffset * 1000)
+  
 }
 
 tool.onMouseUp = (event) => {
