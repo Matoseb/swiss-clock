@@ -7,10 +7,11 @@ export function addMilliseconds(t, milliseconds) {
 export function hourToAngle(date, snap) {
   let hours = date.getHours()
   if (!snap) {
-    const millis = date.getMilliseconds() / 1000 / 60 / 60
-    const seconds = date.getSeconds() / 60 / 60
+    // const millis = date.getMilliseconds() / 1000 / 60 / 60
+    // const seconds = date.getSeconds() / 60 / 60
     const minutes = date.getMinutes() / 60
-    hours += minutes + seconds + millis
+    // hours += minutes + seconds + millis
+    hours += minutes
   };
   return hours / 12 * 360
 }
