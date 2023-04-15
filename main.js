@@ -21,8 +21,8 @@ paper.setup('paperCanvas');
 const { view, project, Path, Tool, Point } = paper
 const tool = new Tool();
 
+let lastTime = new Date()
 let startTime = new Date() // 1971
-let timeOffset = 0
 let selectedNeedle = false
 
 const springs = {
@@ -175,14 +175,16 @@ view.onFrame = (event) => {
   springs.minutes.toggle(true)
   springs.hours.toggle(true)
 
+  const time = new Date()
+  
   if (!selectedNeedle) {
-    // timeOffset = 
-    startTime = addMilliseconds(startTime, event.delta * 1000)
+    startTime = addMilliseconds(startTime, time.getTime() - lastTime.getTime());
   } else {
     selectedNeedle.data.spring.toggle(false)
     // timeOffset += (Math.floor(timeOffset/60) * 60) - timeOffset
   }
 
+  lastTime = time
   // console.log(timeOffset);
 
   if (selectedNeedle.timeFactor) {
@@ -236,13 +238,14 @@ tool.onMouseDown = (event) => {
   const foundNeedle = findNeedle(event.point);
 
   project.activeLayer.selected = false;
-  if (foundNeedle) {
-    selectedNeedle = foundNeedle;
-    const anchor = selectedNeedle.localToGlobal(selectedNeedle.pivot)
-    selectedNeedle.data.angle = findAngle(event.downPoint, anchor)
-    selectedNeedle.data.seconds = startTime.getSeconds()
-    setClass('--active', true);
-  }
+  if (!foundNeedle) return
+
+  selectedNeedle = foundNeedle;
+  const anchor = selectedNeedle.localToGlobal(selectedNeedle.pivot)
+  selectedNeedle.data.angle = findAngle(event.downPoint, anchor)
+  selectedNeedle.data.seconds = startTime.getSeconds()
+  setClass('--active', true);
+
 }
 
 
@@ -250,7 +253,6 @@ tool.onMouseMove = (event) => {
   const foundNeedle = findNeedle(event.point);
   setClass('--hover', foundNeedle);
 }
-
 tool.onMouseDrag = (event) => {
   if (!selectedNeedle) return;
 
@@ -261,7 +263,7 @@ tool.onMouseDrag = (event) => {
 
   const timeOffset = delta / 360 * selectedNeedle.data.timeFactor;
   startTime = addMilliseconds(startTime, timeOffset * 1000)
-  
+
 }
 
 tool.onMouseUp = (event) => {
