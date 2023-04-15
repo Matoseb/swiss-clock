@@ -176,7 +176,7 @@ view.onFrame = (event) => {
   springs.hours.toggle(true)
 
   const time = new Date()
-  
+
   if (!selectedNeedle) {
     startTime = addMilliseconds(startTime, time.getTime() - lastTime.getTime());
   } else {
@@ -245,14 +245,13 @@ tool.onMouseDown = (event) => {
   selectedNeedle.data.angle = findAngle(event.downPoint, anchor)
   selectedNeedle.data.seconds = startTime.getSeconds()
   setClass('--active', true);
-
 }
-
 
 tool.onMouseMove = (event) => {
   const foundNeedle = findNeedle(event.point);
   setClass('--hover', foundNeedle);
 }
+
 tool.onMouseDrag = (event) => {
   if (!selectedNeedle) return;
 
@@ -263,7 +262,6 @@ tool.onMouseDrag = (event) => {
 
   const timeOffset = delta / 360 * selectedNeedle.data.timeFactor;
   startTime = addMilliseconds(startTime, timeOffset * 1000)
-
 }
 
 tool.onMouseUp = (event) => {
