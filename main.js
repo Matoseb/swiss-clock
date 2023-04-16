@@ -176,9 +176,10 @@ view.onFrame = (event) => {
   springs.hours.toggle(true)
 
   const time = new Date()
+  const deltaTime = time.getTime() - lastTime.getTime()
 
   if (!selectedNeedle) {
-    startTime = addMilliseconds(startTime, time.getTime() - lastTime.getTime());
+    startTime = addMilliseconds(startTime, deltaTime);
   } else {
     selectedNeedle.data.spring.toggle(false)
     // timeOffset += (Math.floor(timeOffset/60) * 60) - timeOffset
@@ -203,13 +204,13 @@ view.onFrame = (event) => {
   // startTime.setMilliseconds(0)
 
   needleSec.matrix.reset()
-  needleSec.rotate(springs.seconds.update(angleSec, event.delta));
+  needleSec.rotate(springs.seconds.update(angleSec, deltaTime));
 
   needleMin.matrix.reset()
-  needleMin.rotate(springs.minutes.update(angleMin, event.delta));
+  needleMin.rotate(springs.minutes.update(angleMin, deltaTime));
 
   needleHour.matrix.reset()
-  needleHour.rotate(springs.hours.update(angleHour, event.delta));
+  needleHour.rotate(springs.hours.update(angleHour, deltaTime));
 
   fpsGraph.end();
 

@@ -22,7 +22,7 @@ export class AngleSpring extends animation.Spring {
         // }
 
         this.value = oldVal;
-        this.value += this.velocity * (delta * 120)
+        this.value += this.velocity * (delta / 1000 * 120)
         return this.value;
     }
 
