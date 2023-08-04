@@ -192,8 +192,11 @@ function getFPS(fpsGraph) {
 
 needleSec.visible = options.showSeconds
 
-view.onFrame = (event) => {
+view.autoUpdate = false;
 
+
+
+view.onFrame = (event) => {
   fpsGraph.begin();
   const fps = getFPS(fpsGraph);
 
@@ -255,6 +258,13 @@ view.onFrame = (event) => {
 
   // timeOffset = 0
 }
+
+function animate() {
+  view.update();
+  requestAnimationFrame(animate);
+}
+
+animate();
 
 function snappySeconds(angleSec, delay) {
   const waitDelay = secondToAngle(delay);
