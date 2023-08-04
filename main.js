@@ -17,6 +17,7 @@ const options = {
   start: Number(urlParams.get('time') || Date.now()),
   background: urlParams.get('background') || 'black',
   margin: urlParams.get('margin') || '4em',
+  waitDelay: Number(urlParams.get('wait') || 1.5),
 }
 
 const pane = new Pane();
@@ -45,7 +46,7 @@ const springs = {
   seconds: new AngleSpring({
     drag: 0.9,
     strength: 0.1,
-    value: snappySeconds(secondToAngle(startTime, false), 1.5),
+    value: snappySeconds(secondToAngle(startTime, false), options.waitDelay),
   }),
 
   minutes: new AngleSpring({
@@ -204,7 +205,7 @@ view.onFrame = (event) => {
   const deltaTime = (time.getTime() - lastTime.getTime());
   const tick = (startTime.getTime() - tickTime.getTime());
 
-  if(Math.abs(tick) >= 1000) {
+  if (Math.abs(tick) >= 1000) {
     tickTime = new Date(startTime.getTime())
 
     window.parent.postMessage({
@@ -234,7 +235,7 @@ view.onFrame = (event) => {
 
   const angleHour = hourToAngle(startTime, false);
   const angleMin = minuteToAngle(startTime, true);
-  const angleSec = snappySeconds(secondToAngle(startTime, false), 1.5);
+  const angleSec = snappySeconds(secondToAngle(startTime, false), options.waitDelay);
 
 
 
