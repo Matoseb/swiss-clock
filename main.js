@@ -7,6 +7,18 @@ import { getDeltaAngle, AngleSpring } from '/math-utils.js'
 import { Pane } from 'tweakpane';
 import * as EssentialsPlugin from '@tweakpane/plugin-essentials';
 
+// get needle url param
+// http://localhost:3000/?seconds=1&real=0&background=white&margin=0
+const urlParams = new URLSearchParams(window.location.search);
+
+const options = {
+  showSeconds: Number(urlParams.get('seconds') || 1),
+  realTime: Number(urlParams.get('real') || 1),
+  start: Number(urlParams.get('time') || Date.now()),
+  background: urlParams.get('background') || 'black',
+  margin: urlParams.get('margin') || '4em',
+}
+
 const pane = new Pane();
 pane.registerPlugin(EssentialsPlugin);
 const fpsGraph = pane.addBlade({
@@ -17,13 +29,17 @@ pane.hidden = !import.meta.env.DEV;
 
 console.log("https://matoseb.com");
 
+document.documentElement.style.setProperty('--background-color', options.background);
+document.documentElement.style.setProperty('--margin', options.margin);
+
 paper.setup('paperCanvas');
 const { view, project, Path, Tool, Point } = paper
 const tool = new Tool();
 
-let lastTime = new Date()
-let startTime = new Date() // 1971
+let lastTime = new Date(options.start)
+let startTime = new Date(options.start) // 1971
 let selectedNeedle = false
+let tickTime = new Date(0)
 
 const springs = {
   seconds: new AngleSpring({
@@ -167,19 +183,41 @@ view.onResize = () => {
 }
 view.onResize();
 
+const IDEAL_FPS = 120;
+
+function getFPS(fpsGraph) {
+  return parseInt(fpsGraph.element.querySelector('.tp-fpsv_v').textContent) || IDEAL_FPS;
+}
+
+needleSec.visible = options.showSeconds
+
 view.onFrame = (event) => {
 
   fpsGraph.begin();
+  const fps = getFPS(fpsGraph);
 
   springs.seconds.toggle(true)
   springs.minutes.toggle(true)
   springs.hours.toggle(true)
 
   const time = new Date()
-  const deltaTime = time.getTime() - lastTime.getTime()
+  const deltaTime = (time.getTime() - lastTime.getTime());
+  const tick = (startTime.getTime() - tickTime.getTime());
+
+  if(Math.abs(tick) >= 1000) {
+    tickTime = new Date(startTime.getTime())
+
+    window.parent.postMessage({
+      type: 'tick',
+      data: startTime.getTime(),
+    }, '*')
+  }
 
   if (!selectedNeedle) {
-    startTime = addMilliseconds(startTime, deltaTime);
+
+    if (options.realTime)
+      startTime = addMilliseconds(startTime, deltaTime);
+
   } else {
     selectedNeedle.data.spring.toggle(false)
     // timeOffset += (Math.floor(timeOffset/60) * 60) - timeOffset
