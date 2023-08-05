@@ -194,11 +194,30 @@ needleSec.visible = options.showSeconds
 
 view.autoUpdate = false;
 
+// check visibility of window
+
+
+let isVisible = true;
+let isVisibleFrame = isVisible;
+
+document.addEventListener("visibilitychange", () => {
+  const visible = document.visibilityState === "visible";
+
+  if(!visible) {
+    isVisible = false
+    return;
+  };
+
+  requestAnimationFrame(() => {
+    isVisible = true;
+  })
+});
 
 
 view.onFrame = (event) => {
   fpsGraph.begin();
   const fps = getFPS(fpsGraph);
+
 
   springs.seconds.toggle(true)
   springs.minutes.toggle(true)
@@ -216,6 +235,9 @@ view.onFrame = (event) => {
       data: startTime.getTime(),
     }, '*')
   }
+
+
+  
 
   if (!selectedNeedle) {
 
@@ -236,27 +258,46 @@ view.onFrame = (event) => {
     // time.setSeconds
   }
 
+  console.log(isVisible);
+
+  let hasChanged = isVisibleFrame !== isVisible;
+
+  updateTime(startTime, deltaTime, hasChanged)
+
+  isVisibleFrame = isVisible
+
+  fpsGraph.end();
+
+  // timeOffset = 0
+}
+
+function updateTime(startTime, deltaTime, disableSpring) {
+
+
   const angleHour = hourToAngle(startTime, false);
   const angleMin = minuteToAngle(startTime, true);
   const angleSec = snappySeconds(secondToAngle(startTime, false), options.waitDelay);
-
-
 
   // startTime.setSeconds(selectedNeedle.data.seconds)
   // startTime.setMilliseconds(0)
 
   needleSec.matrix.reset()
-  needleSec.rotate(springs.seconds.update(angleSec, deltaTime));
+  needleSec.rotate(updateSpring(springs.seconds, angleSec, deltaTime, disableSpring));
 
   needleMin.matrix.reset()
-  needleMin.rotate(springs.minutes.update(angleMin, deltaTime));
+  needleMin.rotate(updateSpring(springs.minutes, angleMin, deltaTime, disableSpring));
 
   needleHour.matrix.reset()
-  needleHour.rotate(springs.hours.update(angleHour, deltaTime));
+  needleHour.rotate(updateSpring(springs.hours, angleHour, deltaTime, disableSpring));
+}
 
-  fpsGraph.end();
-
-  // timeOffset = 0
+function updateSpring(spring, angle, deltaTime, disableSpring) {
+  if (disableSpring) {
+    spring.setTarget(angle)
+    spring.value = angle;
+    // spring.velocity = 0
+  }
+  return spring.update(angle, deltaTime)
 }
 
 function animate() {
