@@ -258,8 +258,6 @@ view.onFrame = (event) => {
     // time.setSeconds
   }
 
-  console.log(isVisible);
-
   let hasChanged = isVisibleFrame !== isVisible;
 
   updateTime(startTime, deltaTime, hasChanged)
