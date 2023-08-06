@@ -203,7 +203,7 @@ let isVisibleFrame = isVisible;
 document.addEventListener("visibilitychange", () => {
   const visible = document.visibilityState === "visible";
 
-  if(!visible) {
+  if (!visible) {
     isVisible = false
     return;
   };
@@ -213,6 +213,15 @@ document.addEventListener("visibilitychange", () => {
   })
 });
 
+window.addEventListener('message', (event) => {
+
+  const { type, data } = event.data
+
+  if (type === 'setTime') {
+    startTime = new Date(data.time)
+    updateTime(startTime, 0, data.instant)
+  }
+})
 
 view.onFrame = (event) => {
   fpsGraph.begin();
@@ -237,7 +246,7 @@ view.onFrame = (event) => {
   }
 
 
-  
+
 
   if (!selectedNeedle) {
 
